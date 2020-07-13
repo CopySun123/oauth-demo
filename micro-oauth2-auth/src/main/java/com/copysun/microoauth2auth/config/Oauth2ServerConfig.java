@@ -15,9 +15,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.TokenEnhancer;
-import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.token.*;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
@@ -38,6 +37,9 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
     private CustomizeTokenEnhancer customizeTokenEnhancer;
 
     @Resource
+    private ClientDetailsService clientDetailsService;
+
+    @Resource
     private JwtTokenSave jwtTokenSave;
 
     @Resource
@@ -54,7 +56,7 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        security.allowFormAuthenticationForClients().checkTokenAccess("permitAll()");
+        security.allowFormAuthenticationForClients().checkTokenAccess("permitAll()").tokenKeyAccess("permitAll()");
     }
 
     /**
@@ -68,23 +70,36 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
                 .withClient("client-app")
                 .secret(passwordEncoder.encode("123456"))
                 .scopes("all")
-                .authorizedGrantTypes("password","refresh_token")
-                .accessTokenValiditySeconds(60)
-                .refreshTokenValiditySeconds(3600);
+                .authorizedGrantTypes("password","refresh_token");
     }
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        TokenEnhancerChain tokenEnhancerChain=new TokenEnhancerChain();
-        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(customizeTokenEnhancer.MyTokenEnhancer(),jwtTokenSave.jwtAccessTokenConverter()));
 
         endpoints.authenticationManager(authenticationManager)
                 .userDetailsService(userService)
-                .tokenEnhancer(tokenEnhancerChain)
-                .accessTokenConverter(jwtTokenSave.jwtAccessTokenConverter())//设置jwt令牌的关键步骤
-                .tokenStore(jwtTokenSave.tokenStore());
+//                .tokenEnhancer(tokenEnhancerChain)
+                .tokenServices(tokenServices());
     }
 
+    //配置token管理服务
+    @Bean
+    public AuthorizationServerTokenServices tokenServices() {
+        DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+        defaultTokenServices.setClientDetailsService(clientDetailsService);
+        defaultTokenServices.setSupportRefreshToken(true);
 
+        //配置token的存储方法
+        defaultTokenServices.setTokenStore(jwtTokenSave.tokenStore());
+        defaultTokenServices.setAccessTokenValiditySeconds(300);
+        defaultTokenServices.setRefreshTokenValiditySeconds(1500);
+
+        //配置token增加,把一般token转换为jwt token
+        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(customizeTokenEnhancer.MyTokenEnhancer(),jwtTokenSave.jwtAccessTokenConverter()));
+
+        defaultTokenServices.setTokenEnhancer(tokenEnhancerChain);
+        return defaultTokenServices;
+    }
 
 }

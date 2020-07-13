@@ -28,19 +28,16 @@ public class UserServiceImpl implements UserDetailsService {
 
     private List<UserDto> users;
 
-    @PostConstruct
-    public  void initUser(){
+    @Override
+    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+
         users=new ArrayList<>();
-        UserDto userDto1=new UserDto("sun",new BCryptPasswordEncoder().encode("admin"),AuthorityUtils.createAuthorityList("ADMIN"));
+        UserDto userDto1=new UserDto("sun",new BCryptPasswordEncoder().encode("sun"),AuthorityUtils.createAuthorityList("ADMIN"));
         userDto1.setId("16820003");
-        UserDto userDto2=new UserDto("copysun",new BCryptPasswordEncoder().encode("test"),AuthorityUtils.createAuthorityList("TEST"));
+        UserDto userDto2=new UserDto("copysun",new BCryptPasswordEncoder().encode("copysun"),AuthorityUtils.createAuthorityList("TEST"));
         userDto2.setId("16820004");
         users.add(userDto1);
         users.add(userDto2);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
 
         List<UserDto> userDtos=users.stream().filter(user->user.getUsername().equals(s)).collect(Collectors.toList());
         if(ObjectUtils.isEmpty(userDtos)){

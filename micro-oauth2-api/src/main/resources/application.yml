@@ -1,0 +1,11 @@
+server:
+  port: 9403
+spring:
+  profiles:
+    active: dev
+  application:
+    name: micro-oauth2-api
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848

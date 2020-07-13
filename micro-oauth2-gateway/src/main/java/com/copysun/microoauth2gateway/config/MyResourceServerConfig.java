@@ -16,10 +16,14 @@ public class MyResourceServerConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http.authorizeExchange()
-                .pathMatchers("/actuator/**","oauth/**").permitAll()
-                .anyExchange().authenticated();
+                .pathMatchers("/actuator/**","auth/**").permitAll()
+                .anyExchange().authenticated()
+                .and()
+                .formLogin()
+                .and()
+                .csrf().disable();
 
-        http.oauth2ResourceServer().jwt().jwkSetUri("http://localhost:9401/rsa/publicKey");
+//        http.oauth2ResourceServer().jwt().jwkSetUri("http://localhost:9401/rsa/publicKey");
 
         return http.build();
     }

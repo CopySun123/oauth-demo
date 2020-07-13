@@ -9,9 +9,9 @@ spring:
     nacos:
       discovery:
         server-addr: localhost:8848
-    #        locator:
-#          enabled: true #开启从注册中心动态创建路由的功能
-#          lower-case-service-id: true #使用小写服务名，默认是大写
+        locator:
+          enabled: true #开启从注册中心动态创建路由的功能
+          lower-case-service-id: true #使用小写服务名，默认是大写
     gateway:
       routes:
         - id: oauth2-api-route
@@ -22,11 +22,11 @@ spring:
             - StripPrefix=1
 
         - id: oauth2-auth-route
-            uri: lb://micro-oauth2-auth
-            predicates:
-              - Path=/api/**
-            filters:
-              - StripPrefix=1
+          uri: lb://micro-oauth2-auth
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
 
   #  security:
   #    oauth2:
