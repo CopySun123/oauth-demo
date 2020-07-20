@@ -18,9 +18,12 @@ import java.util.Map;
 @RestController
 public class KeyPairController {
 
+    @Resource
+    private KeyPair keyPair;
+
     @GetMapping("/rsa/publicKey")
     public Map<String, Object> getKey() {
-        RSAPublicKey publicKey = (RSAPublicKey) RsaUtils.genKeyPair().getPublic();
+        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
         RSAKey key = new RSAKey.Builder(publicKey).build();
         return new JWKSet(key).toJSONObject();
     }

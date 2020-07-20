@@ -7,6 +7,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.sc.SentinelGatewayFilter;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.callback.BlockRequestHandler;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.callback.GatewayCallbackManager;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.exception.SentinelGatewayBlockExceptionHandler;
+import com.copysun.microoauth2gateway.handler.SentinelFallbackHandler;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
@@ -23,13 +24,21 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * @author copysun
+ */
 @Configuration
 public class SentinelConfig {
+
+    @Resource
+    private SentinelFallbackHandler sentinelFallbackHandler;
+
     private final List<ViewResolver> viewResolvers;
     private final ServerCodecConfigurer serverCodecConfigurer;
 
@@ -41,9 +50,10 @@ public class SentinelConfig {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SentinelGatewayBlockExceptionHandler sentinelGatewayBlockExceptionHandler() {
+    public SentinelFallbackHandler sentinelGatewayBlockExceptionHandler() {
         // Register the block exception handler for Spring Cloud Gateway.
-        return new SentinelGatewayBlockExceptionHandler(viewResolvers, serverCodecConfigurer);
+//        return new SentinelGatewayBlockExceptionHandler(viewResolvers, serverCodecConfigurer);
+        return sentinelFallbackHandler;
     }
 
     @Bean
@@ -78,7 +88,7 @@ public class SentinelConfig {
         */
         rules.add(new GatewayFlowRule("oauth2-api-route")
                 .setResourceMode(SentinelGatewayConstants.RESOURCE_MODE_ROUTE_ID)
-                .setCount(1).setIntervalSec(1));
+                .setCount(100000).setIntervalSec(1));
         GatewayRuleManager.loadRules(rules);
     }
 }

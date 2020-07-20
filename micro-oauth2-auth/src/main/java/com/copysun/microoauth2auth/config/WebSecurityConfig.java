@@ -40,8 +40,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
-                .antMatchers("/rsa/publicKey").permitAll()
-                .anyRequest().authenticated();
+                .antMatchers("/rsa/publicKey","/oauth/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .csrf().disable();
     }
 
     @Bean

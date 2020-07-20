@@ -19,6 +19,19 @@ spring:
     port: 6379
     host: localhost
     password:
+
+
+  security:
+    user:
+      name: copysun
+      password: copysun
+#    oauth2:
+#      resourceserver:
+#        opaquetoken:
+#          client-id: 'client-app'
+#          client-secret: '123456'
+#          introspection-uri: 'localhost:9401/oauth/token'
+
 management:
   endpoints:
     web:
